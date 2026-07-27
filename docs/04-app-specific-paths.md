@@ -10,11 +10,11 @@
 | **Xshell/Xftp** | `%USERPROFILE%\Documents\NetSarang Computer\` | Ofuscação própria |
 | **MobaXterm** | Registro + `MobaXterm.ini` | AES com chave derivada de hostname+usuário |
 
-## Token do Discord
+## Tokens de sessão — mensageria e colaboração
 
-O token de sessão do Discord é o equivalente a uma "senha de sessão permanente" — quem o possui assume a conta **sem senha e sem 2FA**, até o token ser revogado (troca de senha, logout de todos os dispositivos).
+Tokens de sessão valem tanto quanto senhas — e costumam ter **menos** proteção e revogação mais difícil. Quem possui o token assume a conta sem senha e, em geral, sem 2FA, até revogação manual.
 
-### Caminhos
+### Discord
 
 | Item | Caminho |
 |---|---|
@@ -24,13 +24,13 @@ O token de sessão do Discord é o equivalente a uma "senha de sessão permanent
 | Discord PTB | `%APPDATA%\discordptb\Local Storage\leveldb\` |
 | Discord (via navegador) | `Local Storage\leveldb\` do perfil do navegador usado |
 
-### Formato do token
+**Formato do token**
 
 - **Token de usuário**: regex `[a-zA-Z0-9_-]{24}\.[a-zA-Z0-9_-]{6}\.[a-zA-Z0-9_-]{27,}` (Base64 de `user_id.timestamp.hmac`)
 - **Token com MFA**: prefixo `mfa.` seguido de ~84 caracteres
 - Nos arquivos `.ldb`/`.log`, aparece como valor da chave `token` no LevelDB
 
-### Proteção (mudança importante de 2022)
+**Proteção (mudança importante de 2022)**
 
 | Versão | Proteção |
 |---|---|
@@ -39,10 +39,88 @@ O token de sessão do Discord é o equivalente a uma "senha de sessão permanent
 
 Como a chave DPAPI é do **próprio usuário**, qualquer processo rodando como o usuário pode decriptar — a criptografia protege apenas contra acesso offline/outro usuário.
 
-### Relevância
+**Relevância**: 🔴 T1528 — vetor massivo de phishing e account takeover desde 2021. 🔵 monitorar leituras de `leveldb\` (Sysmon EID 11), exfiltração de `.ldb`, logons de IPs impossíveis.
 
-- 🔴 **Red Team / infostealers**: alvo T1528 (Steal Application Access Token) — vetor massivo de phishing e account takeover desde 2021; a revogação exige ação do usuário, dando persistência ao atacante
-- 🔵 **Blue Team**: monitorar leituras de `Local Storage\leveldb\` por processos incomuns (Sysmon EID 11), exfiltração de arquivos `.ldb` pequenos, e logons Discord de IPs impossíveis; revogar tokens em resposta a incidentes
+### Slack
+
+| Item | Caminho |
+|---|---|
+| Cookies e Local Storage | `%APPDATA%\Slack\Local Storage\leveldb\`<br>`%APPDATA%\Slack\Network\Cookies` |
+| Chave de criptografia | `%APPDATA%\Slack\Local State` → `os_crypt.encrypted_key` (safeStorage/DPAPI) |
+| Cache de workspaces | `%APPDATA%\Slack\storage\slack-*` |
+
+- O token de sessão (`xoxc-`) + cookie `d` (`xoxd-`) juntos autenticam o workspace inteiro.
+- 🔴 T1528/T1539 — roubo de sessão Slack dá acesso a canais, DMs e arquivos corporativos.
+
+### Microsoft Teams
+
+| Item | Caminho |
+|---|---|
+| Teams clássico | `%APPDATA%\Microsoft\Teams\` (`Local Storage`, `Cookies`, `desktop-config.json`) |
+| New Teams (MSIX) | `%LOCALAPPDATA%\Packages\MSTeams_8wekyb3d8bbwe\LocalCache\` |
+| Credenciais de conta | Credential Manager (`MicrosoftAccount:*`, `MSO*`) + cache MSAL |
+
+- Tokens de acesso/refresh MSAL no cache — reutilizáveis até expiração/revogação condicional.
+- 🔴 session hijacking de Teams é vetor ativo de phishing corporativo (mensagens internas têm confiança implícita).
+
+### Telegram Desktop
+
+| Item | Caminho |
+|---|---|
+| Sessão | `%APPDATA%\Telegram Desktop\tdata\` (`D877F783D5D3EF8C*` e `map*` / `key_datas`) |
+| Instalação portátil | `<pasta do Telegram>\tdata\` |
+
+- A pasta `tdata` inteira **é** a sessão: copiá-la para outra máquina (com o mesmo nome de pasta) assume a conta, sem 2FA local.
+- 🔴 T1528 — exfiltração de `tdata` é alvo padrão de infostealers; 🔵 revogar sessões ativas em *Configurações → Dispositivos* em IR.
+
+### WhatsApp Desktop
+
+| Item | Caminho |
+|---|---|
+| WhatsApp (Store/MSIX) | `%LOCALAPPDATA%\Packages\5319275A.WhatsAppDesktop_*\LocalState\` |
+| WhatsApp (instalador direto) | `%APPDATA%\WhatsApp\Local Storage\leveldb\` |
+| Sessão web | cookies/Local Storage do navegador |
+
+- 🔵 sessões vinculadas são revogáveis em *Aparelhos conectados* no celular — incluir no playbook de IR.
+
+## Tokens de sessão — jogos e mídia
+
+| Plataforma | Caminho | Proteção |
+|---|---|---|
+| **Steam** | `C:\Program Files (x86)\Steam\config\loginusers.vdf`<br>`C:\Program Files (x86)\Steam\ssfn*` | `ssfn` (Steam Guard file) + token = login sem código de e-mail |
+| **Epic Games** | `%LOCALAPPDATA%\EpicGamesLauncher\Saved\Config\Windows\` e `Saved\webcache*\` | Tokens OAuth no webcache |
+| **Spotify** | `%APPDATA%\Spotify\` (Local Storage) | safeStorage/DPAPI |
+| **Riot Games** | `%LOCALAPPDATA%\Riot Games\` | Tokens de sessão no client |
+
+## Histórico de shell e artefatos de linha de comando
+
+| Item | Caminho | Por que importa |
+|---|---|---|
+| Histórico do PowerShell | `%APPDATA%\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt` | **Senhas digitadas em comandos** (`net use`, `ssh`, `mysql -p`, connection strings) ficam em texto claro — achado clássico em DFIR e red team |
+| Histórico do cmd | `doskey /history` (memória) + setas de comando | Sessão atual apenas |
+| `cmdkey /list` | Credential Manager | Enumera credenciais salvas sem elevação |
+| Transcrições | `Start-Transcript` (onde o usuário salvou) | Logs completos de sessão |
+
+## Clientes de banco de dados
+
+| Aplicação | Caminho | Proteção |
+|---|---|---|
+| **DBeaver** | `%APPDATA%\DBeaverData\workspace6\General\.dbeaver\credentials-config.json` + `data-sources.json` | AES com chave padrão conhecida (sem senha mestre) |
+| **SSMS** | `%APPDATA%\Microsoft\SQL Server Management Studio\<versão>\SqlStudio.bin` | DPAPI do usuário |
+| **HeidiSQL** | `HKCU\Software\HeidiSQL\Servers\<nome>` | Ofuscação reversível |
+| **pgAdmin** | `%APPDATA%\pgAdmin\pgadmin4.db` + `%USERPROFILE%\.pgpass` | `.pgpass` em **texto claro** |
+| **MySQL Workbench** | `%APPDATA%\MySQL\Workbench\workbench_user_data.dat` | Vault próprio (DPAPI) |
+| **Azure Data Studio** | `%APPDATA%\azuredatastudio\` + Credential Manager | safeStorage/DPAPI |
+
+## Arquivos de configuração esquecidos
+
+| Arquivo | Local típico | Conteúdo |
+|---|---|---|
+| `unattend.xml` / `autounattend.xml` | `C:\Windows\Panther\`<br>`C:\Windows\System32\sysprep\` | **Senha de admin local em texto claro** de imagens de deploy — remover após sysprep! |
+| `web.config` | pastas de sites IIS (`C:\inetpub\wwwroot\`) | Connection strings com usuário/senha de SQL |
+| `.env` | pastas de projetos dev | Secrets de API, DB e cloud em texto claro — frequentemente commitados por acidente |
+| `appsettings.json` | projetos .NET | Connection strings e chaves de API |
+| `php.ini` / `wp-config.php` | servidores web | Credenciais de banco |
 
 ## Navegadores
 
@@ -105,6 +183,7 @@ Modelo comum: `logins.json` (credenciais criptografadas) + `key4.db` (chave NSS)
 | Item | Caminho |
 |---|---|
 | Git Credential Manager | Credential Manager do Windows (DPAPI) |
+| GitHub CLI (`gh`) | Credential Manager + `%APPDATA%\GitHub CLI\hosts.yml` |
 | Credenciais em texto claro | `%USERPROFILE%\.git-credentials` (quando `credential.helper store`) |
 | Config global | `%USERPROFILE%\.gitconfig` |
 | `.netrc` | `%USERPROFILE%\_netrc` |
@@ -115,6 +194,8 @@ Modelo comum: `logins.json` (credenciais criptografadas) + `key4.db` (chave NSS)
 | Azure CLI | `%USERPROFILE%\.azure\` (tokens DPAPI + MSAL cache) |
 | Docker | `%USERPROFILE%\.docker\config.json` (auth em Base64 se sem cred helper) |
 | kubeconfig | `%USERPROFILE%\.kube\config` (certificados/tokens de cluster) |
+| Terraform | `%USERPROFILE%\.terraform.d\credentials.tfrc.json` |
+| Helm | `%APPDATA%\helm\registry\config.json` |
 
 ## Gerenciadores de senha
 
@@ -126,8 +207,8 @@ Modelo comum: `logins.json` (credenciais criptografadas) + `key4.db` (chave NSS)
 
 ## Implicações de segurança
 
-- `sitemanager.xml`, `_netrc`, `.git-credentials` e `config.json` do Docker são os achados mais fáceis: **Base64 não é criptografia**.
-- Infostealers (RedLine, Vidar, Lumma, Raccoon) têm listas hardcoded cobrindo praticamente **todos** os caminhos de navegadores da tabela acima — inclusive forks obscuros, que usuários instalam achando ser "mais seguros".
-- Tokens de sessão (Discord, Slack, Teams) valem tanto quanto senhas — e costumam ter **menos** proteção e revogação mais difícil.
+- `sitemanager.xml`, `_netrc`, `.git-credentials`, `.pgpass`, `.env` e `unattend.xml` são os achados mais fáceis: **Base64 não é criptografia** e texto claro não perdoa.
+- O `ConsoleHost_history.txt` do PowerShell é uma mina de senhas digitadas — auditar em IR e conscientizar devs a nunca passar senha como argumento.
+- Infostealers (RedLine, Vidar, Lumma, Raccoon) têm listas hardcoded cobrindo praticamente **todos** os caminhos deste documento — inclusive forks obscuros de navegador.
 - Reconhecimento de atacantes (T1552/T1555/T1539/T1528) enumera exatamente essas pastas — ótimo material para **canary files** e regras de detecção.
-- Política: proibir `credential.helper store`, exigir senha mestre nos Gecko-based, preferir gerenciadores de senha corporativos a cofres de navegador.
+- Política: proibir `credential.helper store`, exigir senha mestre nos Gecko-based, remover `unattend.xml` pós-deploy, preferir gerenciadores de senha corporativos a cofres de navegador.
