@@ -1,8 +1,16 @@
 # Windows Credential & SSH Key Paths
 
-Documentação técnica dos **caminhos do sistema Windows onde senhas, credenciais e chaves SSH são armazenadas**, com detalhes sobre formato, mecanismo de proteção (DPAPI, LSA Secrets, SAM) e implicações de segurança.
+Documentação técnica dos **caminhos do sistema Windows onde senhas, credenciais e chaves SSH são armazenadas**, com detalhes sobre formato, mecanismo de proteção (DPAPI, LSA Secrets, SAM) e implicações de segurança ofensiva e defensiva.
 
-> **Propósito**: referência para equipes de **segurança defensiva (Blue Team), DFIR, hardening e pentest autorizado**. Conhecer onde credenciais residem em disco é essencial para auditar exposição, detectar credential dumping e proteger endpoints. Uso fora de ambientes autorizados é ilegal.
+> **Propósito**: referência para equipes de **Red Team (pentest autorizado), Blue Team, DFIR e hardening**. Conhecer onde credenciais residem em disco é essencial tanto para **simular o adversário** (credential access em engajamentos autorizados) quanto para **auditar exposição, detectar credential dumping e proteger endpoints**. Uso fora de ambientes autorizados é ilegal.
+
+## Perspectiva dupla
+
+| 🔴 Red Team | 🔵 Blue Team |
+|---|---|
+| Onde coletar credenciais em cada fase do engajamento (acesso inicial → pós-exploração → movimento lateral) | Onde colocar SACLs, canary files e regras de detecção |
+| Priorização tática dos caminhos (ver [issue #5](../../issues/5)) | Prioridade de hardening baseada na ordem de coleta do atacante |
+| Técnicas MITRE ATT&CK T1003, T1552, T1555, T1528 | Regras Sigma/Sysmon, Credential Guard, LAPS, gMSA |
 
 ## Cobertura
 
@@ -57,4 +65,4 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 
 ## Aviso legal
 
-Todo o conteúdo descreve **localizações públicas e documentadas** do sistema operacional, com finalidade exclusivamente educacional e defensiva. Acesso a credenciais de terceiros sem autorização viola legislações como a Lei Carolina Dieckmann (BR), a CFAA (US) e o GDPR.
+Todo o conteúdo descreve **localizações públicas e documentadas** do sistema operacional, com finalidade educacional, de segurança ofensiva **autorizada** e defensiva. Acesso a credenciais de terceiros sem autorização viola legislações como a Lei Carolina Dieckmann (BR), a CFAA (US) e o GDPR.
