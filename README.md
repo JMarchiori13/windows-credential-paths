@@ -9,7 +9,7 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 | 🔴 Red Team | 🔵 Blue Team |
 |---|---|
 | Onde coletar credenciais em cada fase do engajamento (acesso inicial → pós-exploração → movimento lateral) | Onde colocar SACLs, canary files e regras de detecção |
-| Priorização tática dos caminhos (ver [issue #5](../../issues/5)) | Prioridade de hardening baseada na ordem de coleta do atacante |
+| Priorização tática dos caminhos — ver **[doc 07](docs/07-priorizacao-ofensiva.md)** | Prioridade de hardening baseada na ordem de coleta do atacante |
 | Técnicas MITRE ATT&CK T1003, T1552, T1555, T1528 | Regras Sigma/Sysmon, Credential Guard, LAPS, gMSA |
 
 ## Cobertura
@@ -39,6 +39,7 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 | Credential Guard / LSASS (memória) | `lsass.exe` (processo) | NTLM/Kerberos em memória |
 | Perfis de rede Wi-Fi | `C:\ProgramData\Microsoft\Wlansvc\Profiles\Interfaces\{GUID}\*.xml` | DPAPI |
 | Credenciais RDP salvas | Credential Manager (`TERMSRV/host`) | DPAPI |
+| Token do Discord | `%APPDATA%\discord\Local Storage\leveldb\` | Electron safeStorage (DPAPI) |
 | Logins de navegadores (Chromium) | `%LOCALAPPDATA%\<Vendor>\<Browser>\User Data\Default\Login Data` | DPAPI + AES-GCM / App-Bound |
 | Logins de navegadores (Gecko) | `%APPDATA%\<Vendor>\<Browser>\Profiles\<perfil>\logins.json` + `key4.db` | NSS (senha mestre opcional) |
 
@@ -49,9 +50,10 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 1. **[DPAPI e Credential Manager](docs/01-dpapi-credential-manager.md)** — Masterkeys, blobs de credencial, Vault, escopo usuário vs. máquina.
 2. **[SAM, LSA Secrets e cache de domínio](docs/02-sam-lsa-secrets.md)** — hives de registro, SYSKEY, MSCash, segredos de serviço.
 3. **[Chaves SSH no Windows](docs/03-ssh-keys.md)** — OpenSSH client/server, agente, PuTTY/Pageant, permissões NTFS.
-4. **[Aplicações de terceiros](docs/04-app-specific-paths.md)** — **27 navegadores** (Chromium + Gecko + legado), PuTTY, WinSCP, FileZilla, mRemoteNG, KeePass, clientes Git, AWS/Azure/Docker/kubectl.
+4. **[Aplicações de terceiros](docs/04-app-specific-paths.md)** — **27 navegadores** (Chromium + Gecko + legado), token do Discord, PuTTY, WinSCP, FileZilla, mRemoteNG, KeePass, clientes Git, AWS/Azure/Docker/kubectl.
 5. **[Credenciais de rede](docs/05-network-credentials.md)** — Wi-Fi, RDP, mapeamentos de drive, VPN.
-6. **[Detecção e hardening](docs/06-detection-hardening.md)** — como defender cada local, eventos de auditoria e regras de detecção.
+6. **[Detecção e hardening](docs/06-detection-hardening.md)** 🔵 — como defender cada local, eventos de auditoria e regras de detecção.
+7. **[Priorização ofensiva](docs/07-priorizacao-ofensiva.md)** 🔴 — ordem tática de coleta: fase, privilégio necessário, técnica ATT&CK e o que muda na defesa.
 
 ---
 
