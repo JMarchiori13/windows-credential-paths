@@ -4,6 +4,15 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 
 > **Propósito**: referência para equipes de **segurança defensiva (Blue Team), DFIR, hardening e pentest autorizado**. Conhecer onde credenciais residem em disco é essencial para auditar exposição, detectar credential dumping e proteger endpoints. Uso fora de ambientes autorizados é ilegal.
 
+## Cobertura
+
+| Escopo | Quantidade |
+|---|---|
+| Navegadores (Chromium, Gecko e legado) | **27** — inclui Chrome, Edge, Brave, Opera, Vivaldi, Arc, Yandex, Firefox, Tor, LibreWolf e mais |
+| Clientes SSH/FTP (PuTTY, WinSCP, FileZilla...) | 5+ |
+| Ferramentas de dev (Git, AWS, Azure, Docker, kubeconfig...) | 11 |
+| Locais nativos do Windows (DPAPI, SAM, LSA, Vault, Wi-Fi, RDP, VPN) | 20+ |
+
 ---
 
 ## Índice rápido (TL;DR)
@@ -22,6 +31,8 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 | Credential Guard / LSASS (memória) | `lsass.exe` (processo) | NTLM/Kerberos em memória |
 | Perfis de rede Wi-Fi | `C:\ProgramData\Microsoft\Wlansvc\Profiles\Interfaces\{GUID}\*.xml` | DPAPI |
 | Credenciais RDP salvas | Credential Manager (`TERMSRV/host`) | DPAPI |
+| Logins de navegadores (Chromium) | `%LOCALAPPDATA%\<Vendor>\<Browser>\User Data\Default\Login Data` | DPAPI + AES-GCM / App-Bound |
+| Logins de navegadores (Gecko) | `%APPDATA%\<Vendor>\<Browser>\Profiles\<perfil>\logins.json` + `key4.db` | NSS (senha mestre opcional) |
 
 ---
 
@@ -30,7 +41,7 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 1. **[DPAPI e Credential Manager](docs/01-dpapi-credential-manager.md)** — Masterkeys, blobs de credencial, Vault, escopo usuário vs. máquina.
 2. **[SAM, LSA Secrets e cache de domínio](docs/02-sam-lsa-secrets.md)** — hives de registro, SYSKEY, MSCash, segredos de serviço.
 3. **[Chaves SSH no Windows](docs/03-ssh-keys.md)** — OpenSSH client/server, agente, PuTTY/Pageant, permissões NTFS.
-4. **[Aplicações de terceiros](docs/04-app-specific-paths.md)** — PuTTY, WinSCP, FileZilla, mRemoteNG, KeePass, navegadores, clientes Git.
+4. **[Aplicações de terceiros](docs/04-app-specific-paths.md)** — **27 navegadores** (Chromium + Gecko + legado), PuTTY, WinSCP, FileZilla, mRemoteNG, KeePass, clientes Git, AWS/Azure/Docker/kubectl.
 5. **[Credenciais de rede](docs/05-network-credentials.md)** — Wi-Fi, RDP, mapeamentos de drive, VPN.
 6. **[Detecção e hardening](docs/06-detection-hardening.md)** — como defender cada local, eventos de auditoria e regras de detecção.
 
