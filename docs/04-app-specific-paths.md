@@ -10,13 +10,61 @@
 | **Xshell/Xftp** | `%USERPROFILE%\Documents\NetSarang Computer\` | Ofuscação própria |
 | **MobaXterm** | Registro + `MobaXterm.ini` | AES com chave derivada de hostname+usuário |
 
-## Navegadores (Chromium e Firefox)
+## Navegadores
 
-| Navegador | Caminho dos logins | Proteção |
+### Família Chromium
+
+Todos os Chromium-based seguem o mesmo modelo de armazenamento:
+
+- **Logins**: `<User Data>\Default\Login Data` (SQLite, senhas AES-GCM)
+- **Cookies/sessões**: `<User Data>\Default\Network\Cookies` (SQLite)
+- **Chave de criptografia**: `<User Data>\Local State` → campo `os_crypt.encrypted_key` (DPAPI)
+- Chrome/Edge/Brave 127+ adicionam **App-Bound Encryption** (vincula a chave ao binário legítimo)
+
+| # | Navegador | Caminho do perfil (`User Data`) |
 |---|---|---|
-| Chrome/Edge | `%LOCALAPPDATA%\Google\Chrome\User Data\Default\Login Data`<br>`%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Login Data` | DPAPI (chave em `Local State`, AES-GCM); Chrome 127+ usa App-Bound Encryption |
-| Firefox | `%APPDATA%\Mozilla\Firefox\Profiles\<perfil>\logins.json` + `key4.db` | NSS; sem senha mestre = decriptável offline |
-| Cookies (session tokens) | `Network\Cookies` (SQLite) nos mesmos perfis | DPAPI/App-Bound |
+| 1 | Google Chrome | `%LOCALAPPDATA%\Google\Chrome\User Data\` |
+| 2 | Microsoft Edge | `%LOCALAPPDATA%\Microsoft\Edge\User Data\` |
+| 3 | Brave | `%LOCALAPPDATA%\BraveSoftware\Brave-Browser\User Data\` |
+| 4 | Opera | `%APPDATA%\Opera Software\Opera Stable\` *(Roaming, sem subpasta User Data)* |
+| 5 | Opera GX | `%APPDATA%\Opera Software\Opera GX Stable\` |
+| 6 | Vivaldi | `%LOCALAPPDATA%\Vivaldi\User Data\` |
+| 7 | Arc | `%LOCALAPPDATA%\Arc\User Data\` |
+| 8 | Yandex Browser | `%LOCALAPPDATA%\Yandex\YandexBrowser\User Data\` |
+| 9 | Epic Privacy Browser | `%LOCALAPPDATA%\Epic Privacy Browser\User Data\` |
+| 10 | Slimjet | `%LOCALAPPDATA%\Slimjet\User Data\` |
+| 11 | Torch | `%LOCALAPPDATA%\Torch\User Data\` |
+| 12 | Naver Whale | `%LOCALAPPDATA%\Naver\Naver Whale\User Data\` |
+| 13 | Coc Coc | `%LOCALAPPDATA%\CocCoc\Browser\User Data\` |
+| 14 | Avast Secure Browser | `%LOCALAPPDATA%\AVAST Software\Browser\User Data\` |
+| 15 | AVG Secure Browser | `%LOCALAPPDATA%\AVG\Browser\User Data\` |
+| 16 | 360 Secure Browser (Qihoo) | `%LOCALAPPDATA%\360Chrome\Chrome\User Data\` |
+| 17 | Cent Browser | `%LOCALAPPDATA%\CentBrowser\User Data\` |
+| 18 | UC Browser | `%LOCALAPPDATA%\UCBrowser\` |
+| 19 | Maxthon (v6+) | `%APPDATA%\Maxthon6\` |
+| 20 | Chromium (open-source) | `%LOCALAPPDATA%\Chromium\User Data\` |
+
+> **Nota**: perfis adicionais ficam em `Profile 1`, `Profile 2`, etc. (em vez de `Default`) — ferramentas de extração devem iterar todos. Opera/Opera GX são exceção: usam `%APPDATA%` diretamente.
+
+### Família Gecko (Firefox e forks)
+
+Modelo comum: `logins.json` (credenciais criptografadas) + `key4.db` (chave NSS) + `cookies.sqlite`. **Sem senha mestre, tudo é decriptável offline.**
+
+| # | Navegador | Caminho do perfil |
+|---|---|---|
+| 1 | Mozilla Firefox | `%APPDATA%\Mozilla\Firefox\Profiles\<perfil>\` |
+| 2 | Tor Browser | `<pasta de instalação>\Browser\TorBrowser\Data\Browser\profile.default\` *(portátil, geralmente em Desktop)* |
+| 3 | Waterfox | `%APPDATA%\Waterfox\Profiles\<perfil>\` |
+| 4 | LibreWolf | `%APPDATA%\LibreWolf\Profiles\<perfil>\` |
+| 5 | Pale Moon | `%APPDATA%\Moonchild Productions\Pale Moon\Profiles\<perfil>\` |
+| 6 | SeaMonkey | `%APPDATA%\Mozilla\SeaMonkey\Profiles\<perfil>\` |
+| 7 | Thunderbird (e-mail) | `%APPDATA%\Thunderbird\Profiles\<perfil>\` — **senhas de e-mail** no mesmo formato |
+
+### Legado
+
+| Navegador | Local | Proteção |
+|---|---|---|
+| Internet Explorer / Edge Legacy | Windows Vault (`%APPDATA%\Microsoft\Vault\`) | DPAPI + Vault schema (ver doc 01) |
 
 ## Git e ferramentas de dev
 
@@ -45,5 +93,6 @@
 ## Implicações de segurança
 
 - `sitemanager.xml`, `_netrc`, `.git-credentials` e `config.json` do Docker são os achados mais fáceis: **Base64 não é criptografia**.
-- Reconhecimento de atacantes (T1552/T1555) enumera exatamente essas pastas — ótimo material para **canary files** e regras de detecção.
-- Política: proibir `credential.helper store`, exigir senha mestre no Firefox, preferir gerenciadores de senha corporativos.
+- Infostealers (RedLine, Vidar, Lumma, Raccoon) têm listas hardcoded cobrindo praticamente **todos** os caminhos de navegadores da tabela acima — inclusive forks obscuros, que usuários instalam achando ser "mais seguros".
+- Reconhecimento de atacantes (T1552/T1555/T1539) enumera exatamente essas pastas — ótimo material para **canary files** e regras de detecção.
+- Política: proibir `credential.helper store`, exigir senha mestre nos Gecko-based, preferir gerenciadores de senha corporativos a cofres de navegador.
