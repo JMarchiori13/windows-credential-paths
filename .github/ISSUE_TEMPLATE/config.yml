@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: "Dúvidas gerais"
+    url: https://github.com/JMarchiori13/windows-credential-paths/issues/new?labels=question
+    about: "Perguntas sobre o conteúdo, convenções do projeto ou como contribuir."

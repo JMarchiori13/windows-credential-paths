@@ -1,0 +1,42 @@
+---
+name: "Correção de caminho existente"
+description: "Corrigir ou atualizar um caminho já documentado"
+title: "[Correção]: <documento/caminho>"
+labels: ["correcao"]
+body:
+  - type: input
+    id: doc
+    attributes:
+      label: Documento afetado
+      description: Qual arquivo do repositório contém a informação incorreta/desatualizada.
+      placeholder: "docs/04-app-specific-paths.md"
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Informação atual (incorreta)
+      description: Copie o trecho/caminho como está documentado hoje.
+    validations:
+      required: true
+  - type: textarea
+    id: corrected
+    attributes:
+      label: Informação correta
+      description: O caminho/comportamento correto, com a versão do Windows/app em que foi verificado.
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Fonte / Evidência
+      description: Link ou descrição da verificação.
+    validations:
+      required: true
+  - type: checkboxes
+    id: versioned
+    attributes:
+      label: Comportamento por versão
+      options:
+        - label: O comportamento varia por versão — documentar ambos em vez de substituir
+          required: false

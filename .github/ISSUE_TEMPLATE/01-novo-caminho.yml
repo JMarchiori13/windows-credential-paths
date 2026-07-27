@@ -1,0 +1,64 @@
+---
+name: "Novo caminho ou aplicação"
+description: "Sugerir um novo caminho de armazenamento de credenciais/chaves para documentação"
+title: "[Novo caminho]: <aplicação/recurso>"
+labels: ["novo-caminho"]
+body:
+  - type: input
+    id: app
+    attributes:
+      label: Aplicação / Recurso
+      description: Nome da aplicação ou recurso do Windows e a versão testada.
+      placeholder: "Ex.: WinSCP 6.3, Windows 11 23H2"
+    validations:
+      required: true
+  - type: textarea
+    id: paths
+    attributes:
+      label: Caminho(s)
+      description: Caminho(s) completo(s), usando as convenções do projeto (%APPDATA%, %LOCALAPPDATA%, HKCU, etc.).
+      placeholder: "%APPDATA%\\Exemplo\\credenciais.db"
+    validations:
+      required: true
+  - type: dropdown
+    id: format
+    attributes:
+      label: Formato de armazenamento
+      options:
+        - Arquivo (binário/texto)
+        - Registro (HKCU/HKLM)
+        - SQLite
+        - JSON/XML
+        - Hive do Windows (SAM/SECURITY/SYSTEM)
+        - Outro
+    validations:
+      required: true
+  - type: dropdown
+    id: protection
+    attributes:
+      label: Mecanismo de proteção
+      options:
+        - DPAPI (usuário)
+        - DPAPI (máquina)
+        - App-Bound Encryption
+        - Senha mestre / passphrase
+        - Ofuscação reversível
+        - Base64
+        - Texto claro
+        - Desconhecido / outro
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Fonte / Evidência
+      description: Documentação oficial, artigo técnico ou descrição da análise própria (com links).
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notas adicionais
+      description: Variações por versão, permissões NTFS/ACL, implicações defensivas, referências MITRE ATT&CK.
+    validations:
+      required: false
