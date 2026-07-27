@@ -10,6 +10,40 @@
 | **Xshell/Xftp** | `%USERPROFILE%\Documents\NetSarang Computer\` | Ofuscação própria |
 | **MobaXterm** | Registro + `MobaXterm.ini` | AES com chave derivada de hostname+usuário |
 
+## Token do Discord
+
+O token de sessão do Discord é o equivalente a uma "senha de sessão permanente" — quem o possui assume a conta **sem senha e sem 2FA**, até o token ser revogado (troca de senha, logout de todos os dispositivos).
+
+### Caminhos
+
+| Item | Caminho |
+|---|---|
+| Local Storage (token) | `%APPDATA%\discord\Local Storage\leveldb\*.ldb` e `*.log` |
+| Chave de criptografia | `%APPDATA%\discord\Local State` → campo `os_crypt.encrypted_key` |
+| Discord Canary | `%APPDATA%\discordcanary\Local Storage\leveldb\` |
+| Discord PTB | `%APPDATA%\discordptb\Local Storage\leveldb\` |
+| Discord (via navegador) | `Local Storage\leveldb\` do perfil do navegador usado |
+
+### Formato do token
+
+- **Token de usuário**: regex `[a-zA-Z0-9_-]{24}\.[a-zA-Z0-9_-]{6}\.[a-zA-Z0-9_-]{27,}` (Base64 de `user_id.timestamp.hmac`)
+- **Token com MFA**: prefixo `mfa.` seguido de ~84 caracteres
+- Nos arquivos `.ldb`/`.log`, aparece como valor da chave `token` no LevelDB
+
+### Proteção (mudança importante de 2022)
+
+| Versão | Proteção |
+|---|---|
+| Antes de ~ago/2022 | **Texto claro** nos arquivos LevelDB — leitura direta |
+| Após ~ago/2022 | Token criptografado via **Electron safeStorage** (AES-GCM com chave DPAPI em `Local State`) — mesmo modelo dos navegadores Chromium |
+
+Como a chave DPAPI é do **próprio usuário**, qualquer processo rodando como o usuário pode decriptar — a criptografia protege apenas contra acesso offline/outro usuário.
+
+### Relevância
+
+- 🔴 **Red Team / infostealers**: alvo T1528 (Steal Application Access Token) — vetor massivo de phishing e account takeover desde 2021; a revogação exige ação do usuário, dando persistência ao atacante
+- 🔵 **Blue Team**: monitorar leituras de `Local Storage\leveldb\` por processos incomuns (Sysmon EID 11), exfiltração de arquivos `.ldb` pequenos, e logons Discord de IPs impossíveis; revogar tokens em resposta a incidentes
+
 ## Navegadores
 
 ### Família Chromium
@@ -94,5 +128,6 @@ Modelo comum: `logins.json` (credenciais criptografadas) + `key4.db` (chave NSS)
 
 - `sitemanager.xml`, `_netrc`, `.git-credentials` e `config.json` do Docker são os achados mais fáceis: **Base64 não é criptografia**.
 - Infostealers (RedLine, Vidar, Lumma, Raccoon) têm listas hardcoded cobrindo praticamente **todos** os caminhos de navegadores da tabela acima — inclusive forks obscuros, que usuários instalam achando ser "mais seguros".
-- Reconhecimento de atacantes (T1552/T1555/T1539) enumera exatamente essas pastas — ótimo material para **canary files** e regras de detecção.
+- Tokens de sessão (Discord, Slack, Teams) valem tanto quanto senhas — e costumam ter **menos** proteção e revogação mais difícil.
+- Reconhecimento de atacantes (T1552/T1555/T1539/T1528) enumera exatamente essas pastas — ótimo material para **canary files** e regras de detecção.
 - Política: proibir `credential.helper store`, exigir senha mestre nos Gecko-based, preferir gerenciadores de senha corporativos a cofres de navegador.
