@@ -48,6 +48,17 @@ body:
         - Desconhecido / outro
     validations:
       required: true
+  - type: dropdown
+    id: perspective
+    attributes:
+      label: Perspectiva de relevância
+      description: Classifica a issue com as labels red-team e/ou blue-team.
+      multiple: true
+      options:
+        - "Red Team — coleta em engajamento autorizado, priorização tática"
+        - "Blue Team — detecção, hardening, DFIR"
+    validations:
+      required: true
   - type: textarea
     id: source
     attributes:
@@ -59,6 +70,6 @@ body:
     id: notes
     attributes:
       label: Notas adicionais
-      description: Variações por versão, permissões NTFS/ACL, implicações defensivas, referências MITRE ATT&CK.
+      description: Variações por versão, permissões NTFS/ACL, privilégio necessário para acesso, fase do engajamento, referências MITRE ATT&CK.
     validations:
       required: false
