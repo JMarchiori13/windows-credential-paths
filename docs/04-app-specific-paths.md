@@ -92,6 +92,40 @@ Como a chave DPAPI é do **próprio usuário**, qualquer processo rodando como o
 | **Spotify** | `%APPDATA%\Spotify\` (Local Storage) | safeStorage/DPAPI |
 | **Riot Games** | `%LOCALAPPDATA%\Riot Games\` | Tokens de sessão no client |
 
+## IDEs e editores
+
+### VS Code
+
+| Item | Caminho | Conteúdo |
+|---|---|---|
+| Estado global (SQLite) | `%APPDATA%\Code\User\globalStorage\state.vscdb` | Dados de extensões, alguns tokens em claro |
+| Secrets de extensões | Credential Manager — alvos `vscode*` (ex.: `vscode.github-authentication`) | Tokens OAuth de GitHub, Azure, Remote |
+| Chave safeStorage | `%APPDATA%\Code\Local State` → `os_crypt.encrypted_key` | DPAPI (mesmo modelo Chromium) |
+| Settings sync | `%APPDATA%\Code\User\sync\` | Configurações sincronizadas |
+| Storage por extensão | `%APPDATA%\Code\User\globalStorage\<extensão>\` | Alguns extensões salvam tokens em arquivos próprios |
+| Variantes | `%APPDATA%\Code - Insiders\`, `%APPDATA%\VSCodium\` | Mesma estrutura |
+
+- **Remote-SSH**: reutiliza `%USERPROFILE%\.ssh\` (doc 03) — chaves e config.
+- 🔴 T1552.001 — tokens de extensões dão acesso a repositórios e cloud do dev; 🔵 tratar `state.vscdb` como arquivo sensível em EDR/DLP.
+
+### JetBrains (IntelliJ, PyCharm, WebStorm, DataGrip...)
+
+| Item | Caminho | Conteúdo |
+|---|---|---|
+| Config por IDE | `%APPDATA%\JetBrains\<IDE><versão>\` | `options\`, plugins, datasources |
+| Password Safe (padrão) | **Credential Manager** (native keychain) | Senhas de DB, Git, deployment |
+| Password Safe (modo KeePass) | Arquivo `.kdbx` no diretório de config da IDE | Protegido por senha mestre |
+| Configuração do safe | `%APPDATA%\JetBrains\<IDE><versão>\options\security.xml` | Define o backend usado |
+| DataSources | `%APPDATA%\JetBrains\<IDE><versão>\dataSources\` | Conexões de banco (usuários/hosts) |
+
+### Visual Studio
+
+| Item | Caminho |
+|---|---|
+| Credenciais de conta | Credential Manager (`MicrosoftAccount`, `VS:*`) |
+| Config | `%LOCALAPPDATA%\Microsoft\VisualStudio\<versão>\` |
+| Publish profiles | `Properties\PublishProfiles\*.pubxml` nos projetos — podem conter senha de deploy em claro |
+
 ## Histórico de shell e artefatos de linha de comando
 
 | Item | Caminho | Por que importa |
@@ -209,6 +243,7 @@ Modelo comum: `logins.json` (credenciais criptografadas) + `key4.db` (chave NSS)
 
 - `sitemanager.xml`, `_netrc`, `.git-credentials`, `.pgpass`, `.env` e `unattend.xml` são os achados mais fáceis: **Base64 não é criptografia** e texto claro não perdoa.
 - O `ConsoleHost_history.txt` do PowerShell é uma mina de senhas digitadas — auditar em IR e conscientizar devs a nunca passar senha como argumento.
+- IDEs concentram tokens de GitHub, Azure e bancos de produção — uma estação de dev comprometida vale por dez.
 - Infostealers (RedLine, Vidar, Lumma, Raccoon) têm listas hardcoded cobrindo praticamente **todos** os caminhos deste documento — inclusive forks obscuros de navegador.
 - Reconhecimento de atacantes (T1552/T1555/T1539/T1528) enumera exatamente essas pastas — ótimo material para **canary files** e regras de detecção.
 - Política: proibir `credential.helper store`, exigir senha mestre nos Gecko-based, remover `unattend.xml` pós-deploy, preferir gerenciadores de senha corporativos a cofres de navegador.
