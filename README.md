@@ -16,10 +16,14 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 
 | Escopo | Quantidade |
 |---|---|
-| Navegadores (Chromium, Gecko e legado) | **27** — inclui Chrome, Edge, Brave, Opera, Vivaldi, Arc, Yandex, Firefox, Tor, LibreWolf e mais |
-| Clientes SSH/FTP (PuTTY, WinSCP, FileZilla...) | 5+ |
-| Ferramentas de dev (Git, AWS, Azure, Docker, kubeconfig...) | 11 |
-| Locais nativos do Windows (DPAPI, SAM, LSA, Vault, Wi-Fi, RDP, VPN) | 20+ |
+| Navegadores (Chromium, Gecko e legado) | **27** — Chrome, Edge, Brave, Opera, Vivaldi, Arc, Yandex, Firefox, Tor, LibreWolf e mais |
+| Plataformas de token de sessão | **9** — Discord, Slack, Teams, Telegram, WhatsApp, Steam, Epic, Spotify, Riot |
+| Clientes de e-mail | **5** — Outlook, New Outlook, Thunderbird, eM Client, Mailbird |
+| IDEs e editores | **3** — VS Code, JetBrains, Visual Studio |
+| Clientes de banco de dados | **6** — DBeaver, SSMS, HeidiSQL, pgAdmin, MySQL Workbench, Azure Data Studio |
+| Clientes SSH/FTP | 5 — PuTTY, WinSCP, FileZilla, mRemoteNG, MobaXterm |
+| Ferramentas de dev (Git, AWS, Azure, Docker, kubeconfig, Terraform...) | 14 |
+| Locais nativos do Windows (DPAPI, SAM, LSA, Vault, Wi-Fi, RDP, VPN, Hello) | 25+ |
 
 ---
 
@@ -36,10 +40,12 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 | SAM (senhas locais, hash) | `C:\Windows\System32\config\SAM` | SYSKEY + ACL (SYSTEM only) |
 | LSA Secrets | `HKLM\SECURITY\Policy\Secrets` | SYSKEY/LSA encryption |
 | Credenciais em cache de domínio | `HKLM\SECURITY\Cache` | MSCash v2 |
+| Windows Hello (chaves NGC) | `C:\Windows\ServiceProfiles\LocalService\AppData\Local\Microsoft\Ngc\` | TPM 2.0 (não exportável) / DPAPI |
 | Credential Guard / LSASS (memória) | `lsass.exe` (processo) | NTLM/Kerberos em memória |
 | Perfis de rede Wi-Fi | `C:\ProgramData\Microsoft\Wlansvc\Profiles\Interfaces\{GUID}\*.xml` | DPAPI |
 | Credenciais RDP salvas | Credential Manager (`TERMSRV/host`) | DPAPI |
 | Token do Discord | `%APPDATA%\discord\Local Storage\leveldb\` | Electron safeStorage (DPAPI) |
+| Histórico do PowerShell | `%APPDATA%\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt` | **Texto claro** |
 | Logins de navegadores (Chromium) | `%LOCALAPPDATA%\<Vendor>\<Browser>\User Data\Default\Login Data` | DPAPI + AES-GCM / App-Bound |
 | Logins de navegadores (Gecko) | `%APPDATA%\<Vendor>\<Browser>\Profiles\<perfil>\logins.json` + `key4.db` | NSS (senha mestre opcional) |
 
@@ -48,9 +54,9 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 ## Documentos
 
 1. **[DPAPI e Credential Manager](docs/01-dpapi-credential-manager.md)** — Masterkeys, blobs de credencial, Vault, escopo usuário vs. máquina.
-2. **[SAM, LSA Secrets e cache de domínio](docs/02-sam-lsa-secrets.md)** — hives de registro, SYSKEY, MSCash, segredos de serviço.
+2. **[SAM, LSA Secrets e cache de domínio](docs/02-sam-lsa-secrets.md)** — hives de registro, SYSKEY, MSCash, Windows Hello/PIN/biometria, segredos de serviço.
 3. **[Chaves SSH no Windows](docs/03-ssh-keys.md)** — OpenSSH client/server, agente, PuTTY/Pageant, permissões NTFS.
-4. **[Aplicações de terceiros](docs/04-app-specific-paths.md)** — **27 navegadores** (Chromium + Gecko + legado), token do Discord, PuTTY, WinSCP, FileZilla, mRemoteNG, KeePass, clientes Git, AWS/Azure/Docker/kubectl.
+4. **[Aplicações de terceiros](docs/04-app-specific-paths.md)** — **27 navegadores**, tokens de sessão, e-mail, IDEs, bancos de dados, SSH/FTP, dev tools, shell history, configs esquecidos.
 5. **[Credenciais de rede](docs/05-network-credentials.md)** — Wi-Fi, RDP, mapeamentos de drive, VPN.
 6. **[Detecção e hardening](docs/06-detection-hardening.md)** 🔵 — como defender cada local, eventos de auditoria e regras de detecção.
 7. **[Priorização ofensiva](docs/07-priorizacao-ofensiva.md)** 🔴 — ordem tática de coleta: fase, privilégio necessário, técnica ATT&CK e o que muda na defesa.
