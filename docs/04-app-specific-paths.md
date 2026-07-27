@@ -92,6 +92,46 @@ Como a chave DPAPI é do **próprio usuário**, qualquer processo rodando como o
 | **Spotify** | `%APPDATA%\Spotify\` (Local Storage) | safeStorage/DPAPI |
 | **Riot Games** | `%LOCALAPPDATA%\Riot Games\` | Tokens de sessão no client |
 
+## Clientes de e-mail
+
+### Microsoft Outlook (clássico)
+
+| Item | Caminho | Conteúdo |
+|---|---|---|
+| Perfis | `HKCU\Software\Microsoft\Office\16.0\Outlook\Profiles\` | Contas configuradas, servidores |
+| Credenciais de conta | Credential Manager — `MS.Outlook:*`, `MicrosoftOffice16_Data:ADAL:*` | Senhas IMAP/SMTP/POP e tokens OAuth (DPAPI) |
+| Cache de caixa | `%LOCALAPPDATA%\Microsoft\Outlook\*.ost` | **Conteúdo integral dos e-mails** — legível com ferramentas forenses mesmo sem senha |
+| PST arquivados | onde o usuário salvou (comum: `Documents\Outlook Files\`) | Mesmo conteúdo, proteção de senha PST é fraca/reversível |
+
+### New Outlook (Monarch)
+
+| Item | Caminho |
+|---|---|
+| Dados e cache | `%LOCALAPPDATA%\Microsoft\Olk\` |
+| Tokens | Cache MSAL (`%LOCALAPPDATA%\Microsoft\IdentityCache\`) + WebView2 em `%LOCALAPPDATA%\Microsoft\Olk\EBWebView\` |
+
+### Thunderbird
+
+- `%APPDATA%\Thunderbird\Profiles\<perfil>\logins.json` + `key4.db` — **senhas de e-mail** no formato NSS (ver seção Gecko). Sem senha mestre = decriptável offline.
+- Caixa local: `Mail\` e `ImapMail\` no perfil (mbox/maildir em texto claro).
+
+### eM Client
+
+| Item | Caminho | Proteção |
+|---|---|---|
+| Banco de dados | `%APPDATA%\eM Client\` (`accounts.dat`, `mail_data.dat`) | Senhas criptografadas por máquina (DPAPI-like) |
+| Backups | `%USERPROFILE%\Documents\eM Client\` | Arquivos `.zip` de backup com a base completa |
+
+### Mailbird
+
+- `%APPDATA%\Mailbird\` (SQLite + Local Storage) — tokens OAuth e credenciais IMAP/SMTP.
+
+### Relevância
+
+- 🔴 T1114 (Email Collection): OST/PST contêm a **caixa inteira** — ideal para coleta silenciosa e busca por "senha", "password", "credentials" no histórico de e-mails.
+- 🔴 Credenciais IMAP/SMTP em `MS.Outlook:*` permitem acesso persistente ao mailbox sem interação com MFA moderno (protocolos legados).
+- 🔵 Desabilitar protocolos legados (IMAP/POP basic auth), monitorar acesso a `.ost`/`.pst` por processos estranhos, e lembrar que trocar a senha **não** invalida OST já exfiltrado.
+
 ## IDEs e editores
 
 ### VS Code
@@ -244,6 +284,7 @@ Modelo comum: `logins.json` (credenciais criptografadas) + `key4.db` (chave NSS)
 - `sitemanager.xml`, `_netrc`, `.git-credentials`, `.pgpass`, `.env` e `unattend.xml` são os achados mais fáceis: **Base64 não é criptografia** e texto claro não perdoa.
 - O `ConsoleHost_history.txt` do PowerShell é uma mina de senhas digitadas — auditar em IR e conscientizar devs a nunca passar senha como argumento.
 - IDEs concentram tokens de GitHub, Azure e bancos de produção — uma estação de dev comprometida vale por dez.
+- OST/PST contêm a caixa de e-mail inteira — trocar a senha não invalida o que já foi exfiltrado.
 - Infostealers (RedLine, Vidar, Lumma, Raccoon) têm listas hardcoded cobrindo praticamente **todos** os caminhos deste documento — inclusive forks obscuros de navegador.
-- Reconhecimento de atacantes (T1552/T1555/T1539/T1528) enumera exatamente essas pastas — ótimo material para **canary files** e regras de detecção.
-- Política: proibir `credential.helper store`, exigir senha mestre nos Gecko-based, remover `unattend.xml` pós-deploy, preferir gerenciadores de senha corporativos a cofres de navegador.
+- Reconhecimento de atacantes (T1552/T1555/T1539/T1528/T1114) enumera exatamente essas pastas — ótimo material para **canary files** e regras de detecção.
+- Política: proibir `credential.helper store`, exigir senha mestre nos Gecko-based, remover `unattend.xml` pós-deploy, desabilitar basic auth IMAP/POP, preferir gerenciadores de senha corporativos a cofres de navegador.
