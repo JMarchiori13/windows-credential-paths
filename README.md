@@ -42,6 +42,7 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 | Credenciais em cache de domínio | `HKLM\SECURITY\Cache` | MSCash v2 |
 | Windows Hello (chaves NGC) | `C:\Windows\ServiceProfiles\LocalService\AppData\Local\Microsoft\Ngc\` | TPM 2.0 (não exportável) / DPAPI |
 | Tickets Kerberos | `lsass.exe` (memória da sessão) | Sem cache em disco; T1550.003 |
+| Chave de backup DPAPI (domínio) | AD (segredo dos DCs) | Não rotaciona sozinha; abre todo blob DPAPI do domínio |
 | Credential Guard / LSASS (memória) | `lsass.exe` (processo) | NTLM/Kerberos em memória |
 | Perfis de rede Wi-Fi | `C:\ProgramData\Microsoft\Wlansvc\Profiles\Interfaces\{GUID}\*.xml` | DPAPI |
 | Credenciais RDP salvas | Credential Manager (`TERMSRV/host`) | DPAPI |
@@ -62,6 +63,7 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 6. **[Detecção e hardening](docs/06-detection-hardening.md)** 🔵 — como defender cada local, eventos de auditoria e regras de detecção.
 7. **[Priorização ofensiva](docs/07-priorizacao-ofensiva.md)** 🔴 — ordem tática de coleta: fase, privilégio necessário, técnica ATT&CK e o que muda na defesa.
 8. **[Kerberos e credenciais de domínio](docs/08-kerberos-domain-credentials.md)** 🔴🔵 — tickets em memória, krbtgt e golden/silver (conceitual), RODC, GPP cpassword, DPAPI-NG.
+9. **[DPAPI de domínio e Credential Guard](docs/09-dpapi-domain-credential-guard.md)** 🔴🔵 — a chave de backup DPAPI do AD, o que o Credential Guard protege e o que ele não protege.
 
 ---
 
