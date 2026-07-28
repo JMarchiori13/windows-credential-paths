@@ -26,7 +26,7 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 | PAM corporativo | 4 — CyberArk, Delinea, HashiCorp Vault, BeyondTrust |
 | CI/CD | 4 — GitHub Actions, GitLab CI, Azure DevOps, Jenkins |
 | Cloud híbrida | MSAL, PRT, managed identities |
-| Locais nativos do Windows (DPAPI, SAM, LSA, Vault, Wi-Fi, RDP, VPN, Hello, Kerberos) | 30+ |
+| Locais nativos do Windows (DPAPI, SAM, LSA, Vault, Wi-Fi, RDP, VPN, Hello, Kerberos, AD CS) | 30+ |
 
 ---
 
@@ -48,6 +48,7 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 | Cache MSAL (refresh tokens) | `%LOCALAPPDATA%\Microsoft\IdentityCache\` | DPAPI do usuário |
 | PRT (SSO de cloud) | lsass + CloudAP | TPM quando disponível |
 | Chave de backup DPAPI (domínio) | AD (segredo dos DCs) | Não rotaciona sozinha; abre todo blob DPAPI do domínio |
+| Chaves de certificado (máquina) | `C:\ProgramData\Microsoft\Crypto\RSA\MachineKeys\` | DPAPI + ACL; credencial AD CS |
 | Credential Guard / LSASS (memória) | `lsass.exe` (processo) | NTLM/Kerberos em memória |
 | Perfis de rede Wi-Fi | `C:\ProgramData\Microsoft\Wlansvc\Profiles\Interfaces\{GUID}\*.xml` | DPAPI |
 | Credenciais RDP salvas | Credential Manager (`TERMSRV/host`) | DPAPI |
@@ -73,6 +74,7 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 11. **[Credenciais em CI/CD](docs/11-cicd-credentials.md)** 🔴🔵 — secrets de pipeline, self-hosted runners, token automático e assinatura de código.
 12. **[Segredos em cloud híbrida](docs/12-cloud-hybrid-secrets.md)** 🔴🔵 — cache MSAL, refresh tokens, PRT e managed identities: a fronteira endpoint-cloud.
 13. **[Threat hunting com os caminhos do repo](docs/13-threat-hunting-guide.md)** 🔵 — hunts prontos por camada, canary files e priorização para o SOC.
+14. **[AD CS: certificados como credencial](docs/14-adcs-esc.md)** 🔴🔵 — ESC1–ESC8 conceitual, roubo de certificado e a credencial que sobrevive a troca de senha.
 
 ---
 
