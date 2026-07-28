@@ -75,6 +75,7 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 12. **[Segredos em cloud híbrida](docs/12-cloud-hybrid-secrets.md)** 🔴🔵 — cache MSAL, refresh tokens, PRT e managed identities: a fronteira endpoint-cloud.
 13. **[Threat hunting com os caminhos do repo](docs/13-threat-hunting-guide.md)** 🔵 — hunts prontos por camada, canary files e priorização para o SOC.
 14. **[AD CS: certificados como credencial](docs/14-adcs-esc.md)** 🔴🔵 — ESC1–ESC8 conceitual, roubo de certificado e a credencial que sobrevive a troca de senha.
+15. **[Playbook DFIR](docs/15-dfir-playbook.md)** 🔵 — resposta a incidente de credencial: triagem, contenção na ordem certa, erradicação e os erros clássicos.
 
 ---
 
