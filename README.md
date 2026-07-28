@@ -72,6 +72,7 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 10. **[Credenciais em PAM corporativo](docs/10-pam-corporate-vaults.md)** 🔴🔵 — CyberArk, Delinea, HashiCorp Vault, BeyondTrust: o cofre como alvo e a regra de ouro da defesa.
 11. **[Credenciais em CI/CD](docs/11-cicd-credentials.md)** 🔴🔵 — secrets de pipeline, self-hosted runners, token automático e assinatura de código.
 12. **[Segredos em cloud híbrida](docs/12-cloud-hybrid-secrets.md)** 🔴🔵 — cache MSAL, refresh tokens, PRT e managed identities: a fronteira endpoint-cloud.
+13. **[Threat hunting com os caminhos do repo](docs/13-threat-hunting-guide.md)** 🔵 — hunts prontos por camada, canary files e priorização para o SOC.
 
 ---
 
