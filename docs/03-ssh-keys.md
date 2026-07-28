@@ -1,58 +1,52 @@
 # 03 — Chaves SSH no Windows
 
-## OpenSSH Client (usuário)
+## OpenSSH client (usuário)
 
 **Caminho padrão**: `%USERPROFILE%\.ssh\`
 
 | Arquivo | Conteúdo | Proteção |
 |---|---|---|
-| `id_ed25519` / `id_rsa` / `id_ecdsa` | **Chave privada** | Nenhuma por padrão; passphrase opcional |
-| `id_ed25519.pub` / `id_rsa.pub` | Chave pública | — |
+| `id_ed25519`, `id_rsa`, `id_ecdsa` | Chave privada | Nenhuma por padrão; passphrase opcional |
+| `*.pub` | Chave pública | — |
 | `known_hosts` | Fingerprints de hosts | — |
-| `config` | Config do client (pode referenciar chaves) | — |
+| `config` | Configuração do client, pode referenciar chaves | — |
 
-- Formato OpenSSH (`-----BEGIN OPENSSH PRIVATE KEY-----`). Sem passphrase, a chave privada está **em texto claro no disco** — qualquer processo rodando como o usuário a lê.
+O formato é o OpenSSH (`-----BEGIN OPENSSH PRIVATE KEY-----`). Sem passphrase, a chave privada é texto claro no disco, e qualquer processo rodando como o usuário lê.
 
-## OpenSSH Windows — serviço e administrador
+## OpenSSH como serviço
 
 | Item | Caminho |
 |---|---|
-| Host keys do servidor sshd | `C:\ProgramData\ssh\ssh_host_*_key` |
+| Host keys do sshd | `C:\ProgramData\ssh\ssh_host_*_key` |
 | `sshd_config` | `C:\ProgramData\ssh\sshd_config` |
 | `authorized_keys` (usuário comum) | `%USERPROFILE%\.ssh\authorized_keys` |
 | `administrators_authorized_keys` | `C:\ProgramData\ssh\administrators_authorized_keys` |
 
-Nota: para membros do grupo **Administrators**, o sshd do Windows lê `administrators_authorized_keys` (ACL restrita a SYSTEM/Administrators), **não** o arquivo do perfil.
+Um detalhe que pega muita gente: para membros do grupo Administradores, o sshd do Windows lê o `administrators_authorized_keys`, com ACL restrita a SYSTEM e Administrators, e ignora o arquivo do perfil do usuário.
 
-## ssh-agent (serviço Windows)
+## ssh-agent
 
-- Serviço: `ssh-agent` (`HKLM\SYSTEM\CurrentControlSet\Services\ssh-agent`) — desabilitado por padrão.
-- Chaves adicionadas via `ssh-add` ficam registradas em `HKCU\Software\OpenSSH\Agent\Keys`, criptografadas com **DPAPI do usuário**.
-- Socket: pipe nomeado `\\.\pipe\openssh-ssh-agent`.
+O serviço vem desabilitado por padrão (`HKLM\SYSTEM\CurrentControlSet\Services\ssh-agent`). As chaves adicionadas com `ssh-add` ficam registradas em `HKCU\Software\OpenSSH\Agent\Keys`, criptografadas com o DPAPI do usuário, e o socket é o pipe `\\.\pipe\openssh-ssh-agent`.
 
-## PuTTY / Pageant
+## PuTTY e Pageant
 
 | Item | Local |
 |---|---|
-| Chaves privadas (arquivos `.ppk`) | onde o usuário salvar — comuns: `Desktop`, `Documents`, `%USERPROFILE%` |
-| Sessões salvas (registro) | `HKCU\Software\SimonTatham\PuTTY\Sessions\<sessão>` |
+| Chaves `.ppk` | Onde o usuário salvou; Desktop e Documents são os campeões |
+| Sessões | `HKCU\Software\SimonTatham\PuTTY\Sessions\<sessão>` |
 | Host keys | `HKCU\Software\SimonTatham\PuTTY\SshHostKeys` |
-| Proxy credentials / senhas de sessão | dentro da sessão no registro, quando configuradas |
+| Credenciais de proxy/sessão | Dentro da sessão no registro, quando configuradas |
 
-- Arquivos `.ppk` sem passphrase também são texto claro.
-- **Pageant** mantém chaves descriptografadas **em memória** — alvo de dump de processo.
+Arquivo `.ppk` sem passphrase também é texto claro. E o Pageant mantém as chaves decriptadas em memória, alvo de dump de processo.
 
-## Permissões NTFS esperadas (hardening)
+## Permissões NTFS
 
 ```powershell
-# .ssh deve ser acessível apenas pelo dono
 icacls "$env:USERPROFILE\.ssh" /inheritance:r /grant:r "$env:USERNAME:F"
 ```
 
-O OpenSSH do Windows **recusa** chaves privadas com ACL permissiva demais (mesmo comportamento do OpenSSH no Linux com permissões de arquivo).
+O OpenSSH do Windows recusa chave privada com ACL permissiva demais, mesmo comportamento do OpenSSH no Linux.
 
 ## Implicações de segurança
 
-- Chaves sem passphrase em `Desktop`/`Documents` são achado frequente em resposta a incidentes.
-- Exfiltração de `.ssh` inteiro cabe em poucos KB — monitorar leituras incomuns nesses caminhos (Sysmon Event ID 11, SACLs).
-- Preferir chaves com passphrase + agente, ou armazenar em TPM/`solokeys`/Hello for Business quando possível.
+Chave sem passphrase esquecida em Desktop ou Documents é achado frequente em resposta a incidentes. O diretório `.ssh` inteiro cabe em poucos KB, então leituras incomuns nesses caminhos merecem Sysmon EID 11 e SACL. O caminho mais seguro é passphrase com agente, ou chave em TPM e FIDO2 quando o cenário permite.
