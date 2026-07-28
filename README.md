@@ -23,6 +23,7 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 | Clientes de banco de dados | **6** — DBeaver, SSMS, HeidiSQL, pgAdmin, MySQL Workbench, Azure Data Studio |
 | Clientes SSH/FTP | 5 — PuTTY, WinSCP, FileZilla, mRemoteNG, MobaXterm |
 | Ferramentas de dev (Git, AWS, Azure, Docker, kubeconfig, Terraform...) | 14 |
+| PAM corporativo | 4 — CyberArk, Delinea, HashiCorp Vault, BeyondTrust |
 | Locais nativos do Windows (DPAPI, SAM, LSA, Vault, Wi-Fi, RDP, VPN, Hello, Kerberos) | 30+ |
 
 ---
@@ -64,6 +65,7 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 7. **[Priorização ofensiva](docs/07-priorizacao-ofensiva.md)** 🔴 — ordem tática de coleta: fase, privilégio necessário, técnica ATT&CK e o que muda na defesa.
 8. **[Kerberos e credenciais de domínio](docs/08-kerberos-domain-credentials.md)** 🔴🔵 — tickets em memória, krbtgt e golden/silver (conceitual), RODC, GPP cpassword, DPAPI-NG.
 9. **[DPAPI de domínio e Credential Guard](docs/09-dpapi-domain-credential-guard.md)** 🔴🔵 — a chave de backup DPAPI do AD, o que o Credential Guard protege e o que ele não protege.
+10. **[Credenciais em PAM corporativo](docs/10-pam-corporate-vaults.md)** 🔴🔵 — CyberArk, Delinea, HashiCorp Vault, BeyondTrust: o cofre como alvo e a regra de ouro da defesa.
 
 ---
 
