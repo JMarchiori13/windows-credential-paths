@@ -25,6 +25,7 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 | Ferramentas de dev (Git, AWS, Azure, Docker, kubeconfig, Terraform...) | 14 |
 | PAM corporativo | 4 — CyberArk, Delinea, HashiCorp Vault, BeyondTrust |
 | CI/CD | 4 — GitHub Actions, GitLab CI, Azure DevOps, Jenkins |
+| Cloud híbrida | MSAL, PRT, managed identities |
 | Locais nativos do Windows (DPAPI, SAM, LSA, Vault, Wi-Fi, RDP, VPN, Hello, Kerberos) | 30+ |
 
 ---
@@ -44,6 +45,8 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 | Credenciais em cache de domínio | `HKLM\SECURITY\Cache` | MSCash v2 |
 | Windows Hello (chaves NGC) | `C:\Windows\ServiceProfiles\LocalService\AppData\Local\Microsoft\Ngc\` | TPM 2.0 (não exportável) / DPAPI |
 | Tickets Kerberos | `lsass.exe` (memória da sessão) | Sem cache em disco; T1550.003 |
+| Cache MSAL (refresh tokens) | `%LOCALAPPDATA%\Microsoft\IdentityCache\` | DPAPI do usuário |
+| PRT (SSO de cloud) | lsass + CloudAP | TPM quando disponível |
 | Chave de backup DPAPI (domínio) | AD (segredo dos DCs) | Não rotaciona sozinha; abre todo blob DPAPI do domínio |
 | Credential Guard / LSASS (memória) | `lsass.exe` (processo) | NTLM/Kerberos em memória |
 | Perfis de rede Wi-Fi | `C:\ProgramData\Microsoft\Wlansvc\Profiles\Interfaces\{GUID}\*.xml` | DPAPI |
@@ -68,6 +71,7 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 9. **[DPAPI de domínio e Credential Guard](docs/09-dpapi-domain-credential-guard.md)** 🔴🔵 — a chave de backup DPAPI do AD, o que o Credential Guard protege e o que ele não protege.
 10. **[Credenciais em PAM corporativo](docs/10-pam-corporate-vaults.md)** 🔴🔵 — CyberArk, Delinea, HashiCorp Vault, BeyondTrust: o cofre como alvo e a regra de ouro da defesa.
 11. **[Credenciais em CI/CD](docs/11-cicd-credentials.md)** 🔴🔵 — secrets de pipeline, self-hosted runners, token automático e assinatura de código.
+12. **[Segredos em cloud híbrida](docs/12-cloud-hybrid-secrets.md)** 🔴🔵 — cache MSAL, refresh tokens, PRT e managed identities: a fronteira endpoint-cloud.
 
 ---
 
