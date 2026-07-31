@@ -175,6 +175,37 @@ A maioria das ferramentas modernas de schematics/bitmap são apps Electron. O pa
 
 Ferramentas de schematics para reparo (Borneo, ZXW, Refox e similares) costumam manter sessões longas e armazenar tokens de licença ou credenciais localmente. Em DFIR e red team, o cache dessas apps revela contas ativas e dados de licenciamento. Vale verificar também o `%APPDATA%` (Roaming) da mesma aplicação para arquivos de configuração. Os caminhos exatos variam por versão — confirmar a pasta real instalada antes da coleta.
 
+## Virtualização
+
+### VMware Workstation — credenciais de servidor vSphere/ESXi
+
+Quando o usuário salva a conexão com um servidor ESXi/vSphere ("remember me"), a Workstation grava user:pass localmente em dois arquivos:
+
+| Item | Caminho | Conteúdo |
+|---|---|---|
+| Config privada | `%APPDATA%\VMware\preferences-private.ini` | `encryption.userKey`, `encryption.keySafe`, `encryption.data` — hostname, usuário e senha (em camadas de criptografia) |
+| Dados ACE | `%APPDATA%\VMware\ace.dat` | Segunda camada da cadeia: KDF e chave final da senha |
+
+**Fluxo de decriptação documentado** (pesquisa da XM Cyber, 2022 — [fonte](https://xmcyber.com/blog/decrypting-vmware-workstation-passwords-for-fun/)):
+
+1. `encryption.userKey` → DPAPI do usuário atual → revela o algoritmo (AES-256) e a **KEY_1**
+2. `encryption.keySafe` → primeiros 16 bytes são o IV; AES-256 com KEY_1 → **KEY_2**
+3. `encryption.data` → IV nos primeiros 16 bytes; AES-256 com KEY_2 → configuração em texto claro (hostname, usuário e a senha ainda cifrada)
+4. `ace.dat` (DATA_1) → chave **hardcoded** na `vmwarebase.dll` → revela o KDF (PBKDF2-HMAC-SHA1), o salt e DATA_2
+5. **KEY_3** = PBKDF2(segredo hardcoded na DLL, salt) → decripta DATA_2 → **KEY_4**
+6. Senha → IV = primeiros 16 bytes do campo cifrado; AES com KEY_4 → **texto claro**
+
+Pontos-chave: a proteção real é só a DPAPI do usuário (passo 1); todo o resto da cadeia usa segredos hardcoded na `vmwarebase.dll`, reversíveis offline por qualquer processo no contexto do usuário. Ferramentas prontas: [XMCyber/VmwarePasswordDecryptor](https://github.com/XMCyber/VmwarePasswordDecryptor) e `diana-workstationdec.py` (tijldeneut/diana).
+
+### VMware Workstation — senha de criptografia de VMs
+
+Para VMs criptografadas com "remember password", a senha vai para o **Windows Credential Manager**, com o nome do alvo igual ao `encryptedVM.guid` do `.vmx` da VM. Recuperação trivial no contexto do usuário via `CredReadW` — sem elevação ([PoC testada no 17.5](https://gist.github.com/andshrew/bf6e5e8fa09b957caffc09c6dee58472)).
+
+| Item | Caminho |
+|---|---|
+| GUID da credencial | `encryptedVM.guid` dentro do `.vmx` |
+| Senha | Credential Manager, alvo = o GUID acima |
+
 ## Histórico de shell
 
 | Item | Caminho | Por que importa |
