@@ -155,7 +155,25 @@ O Remote-SSH reutiliza o `%USERPROFILE%\.ssh\` do doc 03. Tokens de extensão d�
 |---|---|---|
 | Cache da aplicação | `%LOCALAPPDATA%\Borneo-App-Cache` | Cache local do app (equivale a `%AppData%\Local\Borneo-App-Cache`), podendo conter tokens de sessão, cookies de autenticação e dados de login da conta Borneo |
 
-Ferramentas de schematics para reparo (Borneo, ZXW, Refox e similares) costumam manter sessões longas e armazenar tokens de licença ou credenciais localmente. Em DFIR e red team, o cache dessas apps revela contas ativas e dados de licenciamento. Vale verificar também o `%APPDATA%` (Roaming) da mesma aplicação para arquivos de configuração.
+### ZXW Tool (ZXWTeam)
+
+| Item | Caminho | Conteúdo |
+|---|---|---|
+| Config e conta | `%APPDATA%\ZXW*` e `HKCU\Software\ZXWTeam` | Dados de licenciamento (dongle/conta), configurações e possível cache de login |
+| Cache | `%LOCALAPPDATA%\ZXW*` | Cache de schematics baixados e dados de sessão |
+
+### Refox (RE-FOX)
+
+| Item | Caminho | Conteúdo |
+|---|---|---|
+| Dados da aplicação | `%APPDATA%\refox` (padrão Electron) | `Cookies`, `Local Storage\leveldb` e `Session Storage` com tokens de sessão da conta |
+| Cache | `%APPDATA%\refox\Cache` | Schematics e bitmaps em cache |
+
+### Padrão geral (apps de reparo baseadas em Electron)
+
+A maioria das ferramentas modernas de schematics/bitmap são apps Electron. O padrão de armazenamento é previsível: `%APPDATA%\<nome-do-app>\` com `Cookies`, `Local Storage`, `Session Storage` e `IndexedDB` — exatamente os mesmos artefatos de sessão que um navegador Chromium manteria (ver seção Navegadores). Se o app usa login web embarcado, as credenciais de sessão vivem aí.
+
+Ferramentas de schematics para reparo (Borneo, ZXW, Refox e similares) costumam manter sessões longas e armazenar tokens de licença ou credenciais localmente. Em DFIR e red team, o cache dessas apps revela contas ativas e dados de licenciamento. Vale verificar também o `%APPDATA%` (Roaming) da mesma aplicação para arquivos de configuração. Os caminhos exatos variam por versão — confirmar a pasta real instalada antes da coleta.
 
 ## Histórico de shell
 
