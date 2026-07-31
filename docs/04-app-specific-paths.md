@@ -206,6 +206,26 @@ Para VMs criptografadas com "remember password", a senha vai para o **Windows Cr
 | GUID da credencial | `encryptedVM.guid` dentro do `.vmx` |
 | Senha | Credential Manager, alvo = o GUID acima |
 
+### VirtualBox
+
+| Item | Caminho | Conteúdo |
+|---|---|---|
+| Config global | `%USERPROFILE%\.VirtualBox\VirtualBox.xml` | Configurações globais, lista de VMs, definições de VRDP e NAT |
+| KeyStore da VM criptografada | `%USERPROFILE%\VirtualBox VMs\<vm>\<vm>.vbox` (campo `KeyStore`) | Parâmetros completos da criptografia do disco: algoritmo, KDF, salts e hash final |
+
+**Criptografia de disco (documentada):** a criptografia de VMs do VirtualBox usa AES-XTS256-PLAIN64 com derivação PBKDF2-SHA256 em esquema de **duplo salt** (PBKDF2_1 com ~100k iterações, PBKDF2_2 com ~20k, hash final verificável offline — ver [dissecação no fórum do hashcat](https://hashcat.net/forum/thread-6506.html)). O KeyStore no `.vbox` contém tudo que é preciso para cracking offline da senha do disco: ferramentas como vboxdie-cracker demonstram o fluxo. Não é recuperável sem força bruta (diferente do caso VMware acima, que tem chaves hardcoded), mas é inteiramente atacável offline — senhas fracas caem.
+
+### Hyper-V (vmconnect)
+
+Credenciais salvas de conexão com VMs via `vmconnect.exe` vão para o **Credential Manager** como alvos `LegacyGeneric:*` (mesmo esquema do `cmdkey /generic` — [referência](https://superuser.com/questions/1568902/unable-to-pass-stored-credentials-to-vmconnect)):
+
+| Item | Caminho | Conteúdo |
+|---|---|---|
+| Credenciais salvas | Credential Manager, alvos `LegacyGeneric:target=<usuário/servidor>` | user:pass de conexão às VMs, recuperável via `CredReadW` no contexto do usuário |
+| Gestão | Hyper-V Settings → User Credentials → Delete Saved Credentials | Interface oficial para limpar o cache |
+
+O vault em disco fica em `%LOCALAPPDATA%\Microsoft\Vault\` e `%APPDATA%\Microsoft\Credentials\` (arquivos `.vcrd` com a chave em `Policy.vpol` no mesmo diretório — ver T1555.004 e a seção DPAPI deste doc).
+
 ## Histórico de shell
 
 | Item | Caminho | Por que importa |
