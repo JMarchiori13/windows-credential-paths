@@ -18,8 +18,12 @@ Tudo o que o próprio usuário lê sem ser admin. É o alvo típico de infosteal
 | `sitemanager.xml`, WinSCP, mRemoteNG, MobaXterm | T1552 | Credenciais de servidores: mapa pronto para lateral |
 | Arquivos `.rdp` em Desktop/Documents | T1552 | Podem trazer blob DPAPI de senha |
 | `Microsoft\Credentials\` e Vault | T1555.004 | `TERMSRV/*` abrem com a masterkey do próprio usuário |
+| `%APPDATA%\VMware\preferences-private.ini` + `ace.dat` | T1555.004 | user:pass de vSphere/ESXi; a cadeia inteira é reversível no contexto do usuário (DPAPI + chaves hardcoded na `vmwarebase.dll`) |
+| Credential Manager, alvos `encryptedVM.guid` e `LegacyGeneric:*` | T1555.004 | Senha de VM criptografada (VMware) e credenciais vmconnect (Hyper-V) via `CredReadW`, sem elevação |
+| `VirtualBox VMs\<vm>\<vm>.vbox` (KeyStore) | T1552 | Tudo para cracking offline da senha do disco (PBKDF2 duplo-salt); senhas fracas caem |
+| `%LOCALAPPDATA%\Borneo-App-Cache` e `%APPDATA%\<app>` de ferramentas de reparo (ZXW, Refox) | T1552 | Tokens de sessão e licenciamento de apps de schematics; padrão Electron = Cookies/leveldb |
 
-O custo para o atacante é baixo. O custo para a defesa não notar é alto: leitura de arquivo pequeno raramente dispara alerta sem SACL ou Sysmon dedicado.
+O custo para o atacante é baixo. O custo para a defesa não notar é alto: leitura de arquivo pequeno raramente dispara alerta sem SACL ou Sysmon dedicado. Destaque para virtualização: credencial de vSphere/ESXi salva na Workstation não é "uma conta a mais" — é o hypervisor inteiro, com acesso a todas as VMs que rodam nele. Em ambiente corporativo, prioridade equivalente a `.kube\config`.
 
 ## Fase 2: pós-elevação (admin local ou SYSTEM)
 
@@ -43,6 +47,7 @@ A credencial coletada vira acesso a outro host. O foco sai da coleta e vai para 
 | Fonte | Técnica ATT&CK | Uso |
 |---|---|---|
 | Credenciais RDP salvas (`TERMSRV/*`) | T1021.001 | Logon interativo em servidor, sem malware |
+| Credenciais vSphere/ESXi (VMware Workstation) | T1021 | Acesso ao hypervisor: console, power e disco de todas as VMs do host — pivot para o datacenter inteiro |
 | Sessões WinSCP, mRemoteNG, MobaXterm | T1021.004 | Inventário de hosts e credenciais no mesmo arquivo |
 | Tokens AWS, Azure, kubectl | T1528 | Movimento lateral para a cloud, fora do alcance do EDR de endpoint |
 | Tickets Kerberos do lsass | T1550.003 | Pass-the-Ticket para serviços de domínio |
