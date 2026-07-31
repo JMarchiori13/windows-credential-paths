@@ -147,6 +147,16 @@ O Remote-SSH reutiliza o `%USERPROFILE%\.ssh\` do doc 03. Tokens de extensão d�
 | Config | `%LOCALAPPDATA%\Microsoft\VisualStudio\<versão>\` |
 | Publish profiles | `Properties\PublishProfiles\*.pubxml` nos projetos, com senha de deploy em texto claro |
 
+## Ferramentas de schematics e suporte técnico
+
+### Borneo Schematic
+
+| Item | Caminho | Conteúdo |
+|---|---|---|
+| Cache da aplicação | `%LOCALAPPDATA%\Borneo-App-Cache` | Cache local do app (equivale a `%AppData%\Local\Borneo-App-Cache`), podendo conter tokens de sessão, cookies de autenticação e dados de login da conta Borneo |
+
+Ferramentas de schematics para reparo (Borneo, ZXW, Refox e similares) costumam manter sessões longas e armazenar tokens de licença ou credenciais localmente. Em DFIR e red team, o cache dessas apps revela contas ativas e dados de licenciamento. Vale verificar também o `%APPDATA%` (Roaming) da mesma aplicação para arquivos de configuração.
+
 ## Histórico de shell
 
 | Item | Caminho | Por que importa |
