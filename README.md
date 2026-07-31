@@ -21,6 +21,8 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 | Clientes de e-mail | **5** — Outlook, New Outlook, Thunderbird, eM Client, Mailbird |
 | IDEs e editores | **3** — VS Code, JetBrains, Visual Studio |
 | Clientes de banco de dados | **6** — DBeaver, SSMS, HeidiSQL, pgAdmin, MySQL Workbench, Azure Data Studio |
+| Virtualização | **4** — VMware Workstation (vSphere/ESXi + VMs criptografadas), VirtualBox (KeyStore), Hyper-V (vmconnect) |
+| Ferramentas de schematics/reparo | **3** — Borneo, ZXW, Refox + padrão geral Electron |
 | Clientes SSH/FTP | 5 — PuTTY, WinSCP, FileZilla, mRemoteNG, MobaXterm |
 | Ferramentas de dev (Git, AWS, Azure, Docker, kubeconfig, Terraform...) | 14 |
 | PAM corporativo | 4 — CyberArk, Delinea, HashiCorp Vault, BeyondTrust |
@@ -56,6 +58,11 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 | Histórico do PowerShell | `%APPDATA%\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt` | **Texto claro** |
 | Logins de navegadores (Chromium) | `%LOCALAPPDATA%\<Vendor>\<Browser>\User Data\Default\Login Data` | DPAPI + AES-GCM / App-Bound |
 | Logins de navegadores (Gecko) | `%APPDATA%\<Vendor>\<Browser>\Profiles\<perfil>\logins.json` + `key4.db` | NSS (senha mestre opcional) |
+| Credenciais vSphere/ESXi (VMware Workstation) | `%APPDATA%\VMware\preferences-private.ini` + `ace.dat` | DPAPI + chaves hardcoded na `vmwarebase.dll` (cadeia reversível) |
+| Senha de VM criptografada (VMware) | Credential Manager (alvo = `encryptedVM.guid` do `.vmx`) | DPAPI; leitura via `CredReadW` |
+| Disco de VM criptografada (VirtualBox) | `%USERPROFILE%\VirtualBox VMs\<vm>\<vm>.vbox` (KeyStore) | AES-XTS256 + PBKDF2 duplo-salt; cracking offline |
+| Credenciais vmconnect (Hyper-V) | Credential Manager (`LegacyGeneric:*`) | DPAPI |
+| Cache de ferramentas de reparo | `%LOCALAPPDATA%\Borneo-App-Cache`, `%APPDATA%\<app>` (ZXW, Refox) | Tokens de sessão; padrão Electron |
 
 ---
 
@@ -64,7 +71,7 @@ Documentação técnica dos **caminhos do sistema Windows onde senhas, credencia
 1. **[DPAPI e Credential Manager](docs/01-dpapi-credential-manager.md)** — Masterkeys, blobs de credencial, Vault, escopo usuário vs. máquina.
 2. **[SAM, LSA Secrets e cache de domínio](docs/02-sam-lsa-secrets.md)** — hives de registro, SYSKEY, MSCash, Windows Hello/PIN/biometria, segredos de serviço.
 3. **[Chaves SSH no Windows](docs/03-ssh-keys.md)** — OpenSSH client/server, agente, PuTTY/Pageant, permissões NTFS.
-4. **[Aplicações de terceiros](docs/04-app-specific-paths.md)** — **27 navegadores**, tokens de sessão, e-mail, IDEs, bancos de dados, SSH/FTP, dev tools, shell history, configs esquecidos.
+4. **[Aplicações de terceiros](docs/04-app-specific-paths.md)** — **27 navegadores**, tokens de sessão, e-mail, IDEs, bancos de dados, SSH/FTP, dev tools, shell history, configs esquecidos, schematics/reparo e virtualização (VMware, VirtualBox, Hyper-V).
 5. **[Credenciais de rede](docs/05-network-credentials.md)** — Wi-Fi, RDP, mapeamentos de drive, VPN.
 6. **[Detecção e hardening](docs/06-detection-hardening.md)** 🔵 — como defender cada local, eventos de auditoria e regras de detecção.
 7. **[Priorização ofensiva](docs/07-priorizacao-ofensiva.md)** 🔴 — ordem tática de coleta: fase, privilégio necessário, técnica ATT&CK e o que muda na defesa.
